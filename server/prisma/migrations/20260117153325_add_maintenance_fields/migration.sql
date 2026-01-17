@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Truck" ADD COLUMN     "lastRtvDate" TIMESTAMP(3),
+ADD COLUMN     "nextOilChangeKm" INTEGER NOT NULL DEFAULT 15000;

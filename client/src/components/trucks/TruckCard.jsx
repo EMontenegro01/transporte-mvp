@@ -1,13 +1,21 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getTruckState, getStatusColor } from '../../utils/maintenanceLogic';
 import { API_URL } from '../../config/api.config';
-function TruckCard({ truck, onUpdate }) {
+
+function TruckCard({ truck, mode = 'view', onUpdate }) {
+  // mode = 'view' -> Solo lectura (Flota)
+  // mode = 'edit' -> Editable (Mantenimiento)
+  
+  const navigate = useNavigate();
   const health = getTruckState(truck);
-  const cardStyle = getStatusColor(health.generalStatus);
+  const cardStyle = getStatusColor(health.generalStatus, truck.status);
   
   const [isEditing, setIsEditing] = useState(false);
   const [newKm, setNewKm] = useState(truck.currentKm);
   const [loading, setLoading] = useState(false);
+  const [showRtvModal, setShowRtvModal] = useState(false);
+  const [newRtvDate, setNewRtvDate] = useState('');
 
   const handleUpdate = async () => {
     if (newKm <= truck.currentKm) return alert("El kilometraje debe ser mayor al actual");
@@ -27,6 +35,104 @@ function TruckCard({ truck, onUpdate }) {
     } catch (error) {
       console.error(error);
       alert("Error al actualizar");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteOilChange = async () => {
+    if (!confirm('¿Confirmar cambio de aceite completado?')) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/trucks/${truck.id}/oil-change`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Respuesta del servidor:', data);
+        alert('Cambio de aceite registrado exitosamente');
+        onUpdate(); // Refresca la lista de camiones
+      } else {
+        const errorData = await res.json();
+        console.error('Error del servidor:', errorData);
+        alert('Error: ' + (errorData.error || 'Error desconocido'));
+      }
+    } catch (error) {
+      console.error('Error de red:', error);
+      alert("Error al registrar cambio de aceite: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteRtv = async () => {
+    if (!newRtvDate) return alert("Debe ingresar la fecha de la próxima RTV");
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/trucks/${truck.id}/rtv`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nextRtvDate: newRtvDate })
+      });
+      
+      if (res.ok) {
+        alert('RTV actualizada exitosamente');
+        setShowRtvModal(false);
+        setNewRtvDate('');
+        onUpdate();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar RTV");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendToMaintenance = async () => {
+    if (!confirm('¿Enviar este camión a mantenimiento?')) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/trucks/${truck.id}/maintenance`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (res.ok) {
+        alert('Camión enviado a mantenimiento');
+        // Navegar a la página de mantenimiento
+        navigate('/mantenimiento');
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al enviar a mantenimiento");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReturnToFleet = async () => {
+    if (!confirm('¿Devolver este camión a la flota?')) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/trucks/${truck.id}/maintenance`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (res.ok) {
+        alert('Camión devuelto a la flota');
+        onUpdate(); // Refresca la lista
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al devolver a la flota");
     } finally {
       setLoading(false);
     }
@@ -185,9 +291,114 @@ function TruckCard({ truck, onUpdate }) {
                 })}
               </span>
             </div>
+
+            {/* Botones de acción según modo */}
+            {mode === 'view' ? (
+              // MODO VISTA (Flota): Solo botón "Enviar a Mantenimiento" si tiene alertas
+              (health.oil.status === 'DANGER' || health.rtv.status === 'DANGER') && (
+                <div className="pt-3 border-t border-gray-100 dark:border-slate-600">
+                  <button
+                    onClick={handleSendToMaintenance}
+                    disabled={loading}
+                    className="w-full px-4 py-2 bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Enviar a Mantenimiento
+                  </button>
+                </div>
+              )
+            ) : (
+              // MODO EDICIÓN (Mantenimiento): Botones de acción completos
+              <div className="pt-3 border-t border-gray-100 dark:border-slate-600 space-y-2">
+                {health.oil.status === 'DANGER' && (
+                  <button
+                    onClick={handleCompleteOilChange}
+                    disabled={loading}
+                    className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Registrar Cambio de Aceite
+                  </button>
+                )}
+                {health.rtv.status === 'DANGER' && (
+                  <button
+                    onClick={() => setShowRtvModal(true)}
+                    disabled={loading}
+                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Actualizar RTV
+                  </button>
+                )}
+                <button
+                  onClick={handleReturnToFleet}
+                  disabled={loading}
+                  className="w-full px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
+                  Devolver a Flota
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Modal para actualizar RTV */}
+      {showRtvModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Actualizar RTV</h3>
+              <button 
+                onClick={() => setShowRtvModal(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Fecha de la próxima RTV
+              </label>
+              <input
+                type="date"
+                value={newRtvDate}
+                onChange={(e) => setNewRtvDate(e.target.value)}
+                className="w-full border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleCompleteRtv}
+                disabled={loading || !newRtvDate}
+                className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white rounded-lg font-semibold disabled:opacity-50 transition-colors"
+              >
+                {loading ? 'Guardando...' : 'Guardar'}
+              </button>
+              <button
+                onClick={() => { setShowRtvModal(false); setNewRtvDate(''); }}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg font-semibold transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,8 +11,16 @@ export const getTruckState = (truck) => {
   const rtvDate = new Date(truck.nextRtvDate);
   
   // 1. CÁLCULO DE ACEITE
+  // Si nextOilChangeKm existe, usarlo. Si no, calcularlo manualmente (datos legacy)
+  let nextOilChangeKm = truck.nextOilChangeKm;
+  
+  if (!nextOilChangeKm || nextOilChangeKm === 0) {
+    // Datos legacy o camiones viejos: calcular manualmente
+    nextOilChangeKm = truck.lastOilChangeKm + OIL_CHANGE_INTERVAL;
+  }
+  
+  const kmRemaining = nextOilChangeKm - truck.currentKm;
   const kmSinceLastOil = truck.currentKm - truck.lastOilChangeKm;
-  const kmRemaining = OIL_CHANGE_INTERVAL - kmSinceLastOil;
   
   let oilStatus = 'OK'; // OK, WARNING, DANGER
   if (kmRemaining <= 0) oilStatus = 'DANGER';
@@ -33,16 +41,22 @@ export const getTruckState = (truck) => {
   else if (oilStatus === 'WARNING' || rtvStatus === 'WARNING') generalStatus = 'WARNING';
 
   return {
-    oil: { status: oilStatus, kmRemaining, kmSinceLastOil },
+    oil: { status: oilStatus, kmRemaining, kmSinceLastOil, nextChangeKm: nextOilChangeKm },
     rtv: { status: rtvStatus, daysRemaining },
     generalStatus
   };
 };
 
-export const getStatusColor = (status) => {
+export const getStatusColor = (status, truckStatus) => {
+  // Si el camión está en mantenimiento, siempre amarillo
+  if (truckStatus === 'MAINTENANCE') {
+    return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-500';
+  }
+  
+  // Si no, usar el estado de salud
   switch (status) {
-    case 'DANGER': return 'border-red-500 bg-red-50';
-    case 'WARNING': return 'border-yellow-500 bg-yellow-50';
-    default: return 'border-gray-200 bg-white';
+    case 'DANGER': return 'border-red-500 bg-red-50 dark:bg-red-900/20 dark:border-red-500';
+    case 'WARNING': return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-500';
+    default: return 'border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700';
   }
 };

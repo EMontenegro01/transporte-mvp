@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
+  const location = useLocation();
 
   // Inicializar al montar el componente
   useEffect(() => {
@@ -32,12 +34,14 @@ function Navbar() {
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
   return (
     <nav className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo y nombre */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="bg-primary-600 dark:bg-primary-500 p-2 rounded-lg">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -47,22 +51,30 @@ function Navbar() {
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">TransportLog</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">Sistema de Gestión</p>
             </div>
-          </div>
-
-          {/* Navegación */}
-          <div className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-primary-600 dark:text-primary-400 font-medium border-b-2 border-primary-600 dark:border-primary-400 pb-1">
+          </Link>
+          
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center space-x-1">
+            <Link
+              to="/"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isActive('/')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+              }`}
+            >
               Flota
-            </a>
-            <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+            </Link>
+            <Link
+              to="/mantenimiento"
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                isActive('/mantenimiento')
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+              }`}
+            >
               Mantenimiento
-            </a>
-            <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-              Reportes
-            </a>
-            <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-              Configuración
-            </a>
+            </Link>
           </div>
 
           {/* Controles derecha */}

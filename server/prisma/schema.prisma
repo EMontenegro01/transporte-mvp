@@ -30,18 +30,20 @@ model Driver {
 
 // 3. Camiones
 model Truck {
-  id             Int      @id @default(autoincrement())
-  plate          String   @unique
-  model          String
-  year           Int
-  currentKm      Int      @default(0)
-  status         TruckStatus @default(AVAILABLE)
-  lastOilChangeKm Int     @default(0)
-  nextRtvDate    DateTime
-  driverId       Int?
-  driver         Driver?  @relation(fields: [driverId], references: [id])
-  maintenances   Maintenance[]
-  updatedAt      DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  plate           String   @unique
+  model           String
+  year            Int
+  currentKm       Int      @default(0)
+  status          TruckStatus @default(AVAILABLE)
+  lastOilChangeKm Int      @default(0)
+  nextOilChangeKm Int      @default(15000)
+  lastRtvDate     DateTime?
+  nextRtvDate     DateTime
+  driverId        Int?
+  driver          Driver?  @relation(fields: [driverId], references: [id])
+  maintenances    Maintenance[]
+  updatedAt       DateTime @updatedAt
 }
 
 // 4. Historial de Mantenimiento
