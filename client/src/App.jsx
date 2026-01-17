@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import TruckCard from './components/TruckCard'
-import CreateTruckModal from './components/CreateTruckModal'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import { API_URL } from './config'
+import TruckCard from './components/trucks/TruckCard'
+import CreateTruckModal from './components/trucks/CreateTruckModal'
+import Navbar from './components/layout/Navbar'
+import Footer from './components/layout/Footer'
+import { API_URL } from './config/api.config'
 
 function App() {
   const [trucks, setTrucks] = useState([])

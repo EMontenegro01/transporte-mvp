@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { getTruckState, getStatusColor } from '../utils/maintenanceLogic';
-import { API_URL } from '../config';
+import { getTruckState, getStatusColor } from '../../utils/maintenanceLogic';
+import { API_URL } from '../../config/api.config';
 function TruckCard({ truck, onUpdate }) {
   const health = getTruckState(truck);
   const cardStyle = getStatusColor(health.generalStatus);

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { API_URL } from '../config'
+import { API_URL } from '../../config/api.config'
 function CreateTruckModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     plate: '',
