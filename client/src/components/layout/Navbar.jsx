@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   // Inicializar al montar el componente
@@ -53,7 +54,7 @@ function Navbar() {
             </div>
           </Link>
           
-          {/* Navigation Links */}
+          {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-1">
             <Link
               to="/"
@@ -78,7 +79,8 @@ function Navbar() {
           </div>
 
           {/* Controles derecha */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            {/* Botón Dark Mode */}
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
@@ -95,8 +97,9 @@ function Navbar() {
                 </svg>
               )}
             </button>
-            
-            <div className="flex items-center space-x-2 border-l border-gray-200 dark:border-slate-700 pl-4">
+
+            {/* Avatar - Desktop */}
+            <div className="hidden sm:flex items-center space-x-2 border-l border-gray-200 dark:border-slate-700 pl-2 ml-2">
               <div className="w-8 h-8 rounded-full bg-primary-600 dark:bg-primary-500 flex items-center justify-center">
                 <span className="text-white text-sm font-semibold">AD</span>
               </div>
@@ -105,8 +108,68 @@ function Navbar() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">Administrador</p>
               </div>
             </div>
+
+            {/* Botón menú móvil */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Menú móvil desplegable */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-slate-700">
+            <div className="space-y-2">
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
+                  isActive('/')
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                Flota
+              </Link>
+              <Link
+                to="/mantenimiento"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`block px-4 py-3 rounded-lg font-medium transition-colors ${
+                  isActive('/mantenimiento')
+                    ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                Mantenimiento
+              </Link>
+            </div>
+            
+            {/* Usuario en móvil */}
+            <div className="sm:hidden mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+              <div className="flex items-center space-x-3 px-4">
+                <div className="w-10 h-10 rounded-full bg-primary-600 dark:bg-primary-500 flex items-center justify-center">
+                  <span className="text-white font-semibold">AD</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Admin</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Administrador</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
