@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CAPA BASE: Aquí definimos los colores "Default" (Modo Claro) y "Dark" */
+@layer base {
+  body {
+    /* MODO CLARO: Fondo gris muy suave (gray-50) y texto gris oscuro (slate-900) */
+    /* MODO OSCURO: Fondo azul muy oscuro (slate-900) y texto blanco suave (slate-50) */
+    @apply bg-gray-50 text-slate-900 dark:bg-slate-900 dark:text-slate-50 transition-colors duration-200;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+
+/* Scrollbar personalizado para que combine */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-slate-700 rounded-full border-2 border-gray-50 dark:border-slate-900;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-slate-600;
+}

@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. Usuarios (Dueño de la empresa)
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+// 2. Camioneros
+model Driver {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  license   String   @unique
+  phone     String?
+  active    Boolean  @default(true)
+  trucks    Truck[]
+  createdAt DateTime @default(now())
+}
+
+// 3. Camiones
+model Truck {
+  id             Int      @id @default(autoincrement())
+  plate          String   @unique
+  model          String
+  year           Int
+  currentKm      Int      @default(0)
+  status         TruckStatus @default(AVAILABLE)
+  lastOilChangeKm Int     @default(0)
+  nextRtvDate    DateTime
+  driverId       Int?
+  driver         Driver?  @relation(fields: [driverId], references: [id])
+  maintenances   Maintenance[]
+  updatedAt      DateTime @updatedAt
+}
+
+// 4. Historial de Mantenimiento
+model Maintenance {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
+  type        MaintenanceType
+  kmAtService Int
+  notes       String?
+  cost        Decimal?
+  truckId     Int
+  truck       Truck    @relation(fields: [truckId], references: [id])
+}
+
+enum TruckStatus {
+  AVAILABLE
+  ON_TRIP
+  MAINTENANCE
+}
+
+enum MaintenanceType {
+  OIL_CHANGE
+  RTV
+  MECHANICAL
+  TIRES
+}
