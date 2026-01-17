@@ -1,5 +1,5 @@
 import { useState } from 'react'
-
+import { API_URL } from '../config'
 function CreateTruckModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     plate: '',
@@ -24,7 +24,7 @@ function CreateTruckModal({ onClose, onSuccess }) {
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:3001/api/trucks', {
+      const response = await fetch(`${API_URL}/trucks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

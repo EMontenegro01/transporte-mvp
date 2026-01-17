@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { getTruckState, getStatusColor } from '../utils/maintenanceLogic';
-
+import { API_URL } from '../config';
 function TruckCard({ truck, onUpdate }) {
   const health = getTruckState(truck);
   const cardStyle = getStatusColor(health.generalStatus);
@@ -14,7 +14,7 @@ function TruckCard({ truck, onUpdate }) {
     
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:3001/api/trucks/${truck.id}/km`, {
+      const res = await fetch(`${API_URL}/trucks/${truck.id}/km`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ km: newKm })

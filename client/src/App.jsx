@@ -3,8 +3,7 @@ import TruckCard from './components/TruckCard'
 import CreateTruckModal from './components/CreateTruckModal'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
-
-const API_URL = 'http://localhost:3001/api'
+import { API_URL } from './config'
 
 function App() {
   const [trucks, setTrucks] = useState([])
